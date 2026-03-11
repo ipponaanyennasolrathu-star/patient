@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediBot Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="nav-left">
+                <button id="menu-btn" class="hamburger hidden" onclick="toggleSidebar()">☰</button>
+                <h1>✨ MediBot System</h1>
+            </div>
+            <button id="nav-logout-btn" class="btn-register hidden" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div id="sidebar-overlay" class="overlay hidden" onclick="toggleSidebar()"></div>
+    <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">Main Menu</div>
+        
+        <div id="patient-links" class="hidden">
+            <a href="#" onclick="switchView('profile')">👤 My Profile</a>
+        </div>
+        
+        <div id="nurse-links" class="hidden">
+            <a href="#" onclick="switchView('nurse-roster')">👥 Patient Roster</a>
+        </div>
+
+        <div id="shared-links" class="hidden">
+            <a href="#" onclick="switchView('vitals')">❤️ Vitals & Control</a>
+            <a href="#" onclick="switchView('inventory')">💊 Medicine Inventory</a>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        
+        <div id="alert-box" class="alert hidden"></div>
+
+        <section id="auth-section">
+            <div id="role-selection" class="auth-card card" style="text-align: center;">
+                <h2>Welcome to MediBot</h2>
+                <p class="label" style="margin-bottom: 20px;">Please select your portal to continue.</p>
+                <button onclick="showPortal('nurse')" class="btn-action bg-gradient-orange w-full" style="margin-bottom: 15px;">⚕️ Staff / Nurse Portal</button>
+                <button onclick="showPortal('patient')" class="btn-action bg-gradient-blue w-full">👤 Patient Portal</button>
+            </div>
+
+            <div id="nurse-auth-container" class="hidden">
+                <div id="nurse-login-form" class="auth-card card">
+                    <h2>⚕️ Staff Login</h2>
+                    <input type="text" id="nurse-login-name" placeholder="Staff Name" class="input-field">
+                    <input type="password" id="nurse-login-pass" placeholder="Password" class="input-field">
+                    <button onclick="nurseLogin()" class="btn-primary w-full bg-gradient-orange">Login as Staff</button>
+                    <p class="auth-switch">New Staff? <a href="#" onclick="toggleNurseAuth('register')">Register here</a> | <a href="#" onclick="showPortal('role')">Back</a></p>
+                </div>
+                <div id="nurse-register-form" class="auth-card card hidden">
+                    <h2>⚕️ Staff Registration</h2>
+                    <input type="text" id="nurse-reg-name" placeholder="Staff Name" class="input-field">
+                    <input type="password" id="nurse-reg-pass" placeholder="Create Password" class="input-field">
+                    <input type="text" id="nurse-reg-id" placeholder="Staff Badge / ID Number" class="input-field">
+                    <button onclick="registerNurse()" class="btn-primary w-full bg-gradient-orange">Complete Registration</button>
+                    <p class="auth-switch">Already registered? <a href="#" onclick="toggleNurseAuth('login')">Login here</a></p>
+                </div>
+            </div>
+
+            <div id="patient-auth-container" class="hidden">
+                <div id="patient-login-form" class="auth-card card">
+                    <h2>👤 Patient Login</h2>
+                    <input type="text" id="patient-login-name" placeholder="Enter Patient Name" class="input-field">
+                    <input type="password" id="patient-login-pass" placeholder="Enter Password" class="input-field">
+                    <button onclick="patientLogin()" class="btn-primary w-full bg-gradient-blue">Login to Dashboard</button>
+                    <p class="auth-switch">New patient? <a href="#" onclick="togglePatientAuth('register')">Register here</a> | <a href="#" onclick="showPortal('role')">Back</a></p>
+                </div>
+                <div id="patient-register-form" class="auth-card card hidden">
+                    <h2>👤 Patient Registration</h2>
+                    <input type="text" id="pat-reg-name" placeholder="Patient Name" class="input-field">
+                    <input type="password" id="pat-reg-pass" placeholder="Create Password" class="input-field">
+                    <div style="display: flex; gap: 15px;">
+                        <input type="text" id="pat-reg-age" placeholder="Age" class="input-field">
+                        <input type="text" id="pat-reg-blood" placeholder="Blood Group (e.g., O+)" class="input-field">
+                    </div>
+                    <input type="text" id="pat-reg-bed" placeholder="Bed (e.g., Ward 1 - Bed 5)" class="input-field">
+                    <input type="text" id="pat-reg-doc" placeholder="Attending Doctor" class="input-field">
+                    <input type="text" id="pat-reg-contact" placeholder="Emergency Contact Number" class="input-field">
+                    <input type="text" id="pat-reg-allergies" placeholder="Known Allergies (or 'None')" class="input-field">
+                    <button onclick="registerPatientSelf()" class="btn-primary w-full bg-gradient-blue">Complete Registration</button>
+                    <p class="auth-switch">Already registered? <a href="#" onclick="togglePatientAuth('login')">Login here</a></p>
+                </div>
+            </div>
+        </section>
+
+        <div id="app-container" class="hidden">
+
+            <section class="card status-card">
+                <h2 class="gradient-text">🤖 Live Robot Location</h2>
+                <div class="robot-status-display">
+                    <div class="pulse-ring"></div>
+                    <p id="robot-status-text" class="status-text">Idle at Charging Dock</p>
+                </div>
+                
+                <div class="tracking-bar">
+                    <div class="track-step active-step" id="step-1">🔋 Base</div>
+                    <div class="track-line" id="line-1"></div>
+                    <div class="track-step" id="step-2">📦 Pickup</div>
+                    <div class="track-line" id="line-2"></div>
+                    <div class="track-step" id="step-3">🛏️ Bed</div>
+                </div>
+
+                <div id="nurse-patient-selector" class="hidden" style="margin-top: 25px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+                    <p class="label" style="font-weight: bold; color: var(--primary);">🎯 Target Patient for Actions:</p>
+                    <select id="global-target-patient" class="input-field" style="margin-bottom: 0; background-color: #f8fafc;" onchange="updateMeterUI()"></select>
+                </div>
+            </section>
+            
+            <section id="view-profile" class="app-view card">
+                <h2>👤 My Profile</h2>
+                <div class="dashboard-grid">
+                    <div class="info-box"><p class="label">Patient Name</p><p class="value text-purple" id="display-name">--</p></div>
+                    <div class="info-box"><p class="label">Age</p><p class="value" id="display-age">--</p></div>
+                    <div class="info-box"><p class="label">Blood Group</p><p class="value text-red" id="display-blood">--</p></div>
+                    <div class="info-box"><p class="label">Assigned Bed</p><p class="value" id="display-bed">--</p></div>
+                    <div class="info-box"><p class="label">Attending Doctor</p><p class="value" id="display-doc">--</p></div>
+                    <div class="info-box"><p class="label">Emergency Contact</p><p class="value" id="display-contact">--</p></div>
+                    <div class="info-box"><p class="label">Allergies</p><p class="value" id="display-allergies">--</p></div>
+                </div>
+            </section>
+
+            <section id="view-nurse-roster" class="app-view card">
+                <h2 class="gradient-text">⚕️ Hospital Patient Roster</h2>
+                <p class="label" style="margin-bottom: 20px;">Overview of all currently registered patients in the network.</p>
+                <div id="patient-list-container" class="dashboard-grid"></div>
+            </section>
+
+            <section id="view-vitals" class="app-view card">
+                <h2>❤️ Patient Vitals & Robot Dispatch</h2>
+                <p class="label" style="margin-bottom: 20px;">Meters deplete realistically. Dispatch robot to refill.</p>
+                
+                <div class="meters-grid">
+                    <div class="meter-container">
+                        <div class="meter-header">
+                            <span>💧 Hydration Level</span>
+                            <span id="hydration-text" class="font-bold text-blue">100%</span>
+                        </div>
+                        <div class="meter-bg">
+                            <div id="hydration-bar" class="meter-fill bg-gradient-blue" style="width: 100%;"></div>
+                        </div>
+                        <button onclick="refill('hydration')" class="btn-action bg-gradient-blue w-full">Dispatch Water</button>
+                    </div>
+
+                    <div class="meter-container">
+                        <div class="meter-header">
+                            <span>🍱 Meal Status</span>
+                            <span id="meal-text" class="font-bold text-orange">100%</span>
+                        </div>
+                        <div class="meter-bg">
+                            <div id="meal-bar" class="meter-fill bg-gradient-orange" style="width: 100%;"></div>
+                        </div>
+                        <button onclick="refill('meal')" class="btn-action bg-gradient-orange w-full">Deliver Meal</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="view-inventory" class="app-view card">
+                <h2>💊 Medicine Inventory</h2>
+                <div class="inventory-grid" id="inventory-grid">
+                    </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
